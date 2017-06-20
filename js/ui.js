@@ -68,14 +68,17 @@ require([
     }, [
       //add plugin, you can use this in modules
       {
-        name: "kkk",
-        plugin: function Plugin(i){
-
+        name: "test",
+        plugin: function Plugin(name){
+          this.pluginName = name;
+          this.getPluginName = function(){
+            return this.pluginName;
+          }
         }
       },
       //S: example
       {
-        name: "asdasdasdasdasd",
+        name: "J$",
         plugin: jQuery
       }
       // ...
@@ -107,6 +110,8 @@ require([
           $(".t_controller__sound button").on("click", function(){
             modules.sounds["teaser_sound"].toggle();
           });
+          var test = new modules.plugins.test("정현");
+          test.getPluginName();
           //E: example
         }
       })
