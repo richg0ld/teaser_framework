@@ -30,7 +30,7 @@ var Teaser = (function(window, document, $, sound, browser){
         OPEN: "open"
       }
     },
-    FIXED_HEIGHT = 1038,
+    FIXED_HEIGHT = $("#wrap").height(),
     TEASER_HEIGHT = 998,
     $HTML = $("html, body");
 
@@ -202,7 +202,7 @@ var Teaser = (function(window, document, $, sound, browser){
       var _this = this;
       $HTML.on(EVENT.MOUSE_WHEEL, function(e){
         var target = _this.sceneList[_this.currentPageIndex];
-
+        console.log(_this._isCanNext(e, target));
         if(_this._isCanNext(e, target)){
           _this.next();
         }
@@ -212,6 +212,7 @@ var Teaser = (function(window, document, $, sound, browser){
       });
     },
     _isCanNext: function(event, target){
+      console.log($HTML.height() + $(window).scrollTop() , FIXED_HEIGHT)
       return event.originalEvent.wheelDelta < 0 &&
         $HTML.height() + $(window).scrollTop() >= FIXED_HEIGHT &&
         target.$scene.children().height() - target.$scene.scrollTop() === TEASER_HEIGHT
