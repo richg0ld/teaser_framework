@@ -20,6 +20,7 @@ var Teaser = (function(window, document, $, sound, browser){
         PAUSE: "pause"
       },
       VIDEO: {
+        VOLUME: "volume",
         PLAY: "play",
         PAUSE: "pause"
       }
@@ -40,6 +41,7 @@ var Teaser = (function(window, document, $, sound, browser){
   function Teaser(options, internalAppOptions, plugins){
     this.isIntroStart = false;
     this.isPaging = false;
+    this.isAnimating = false;
     this.prevPageIndex = -1;
     this.currentPageIndex = 0;
     this._intro = {};
@@ -59,28 +61,39 @@ var Teaser = (function(window, document, $, sound, browser){
 
   //method
   Teaser.prototype = {
-    loaded: function(callback){
-      var _this = this;
+    loaded: function(target, callback){
       if(!modules.loader) modules.loader = {};
       this._addMoudle("loader", "$wrapper", this.$loadingWrapper);
-      window.onload = function(){
-        callback(modules);
-      };
+
+      if(target === window){
+        target.onload = function(){
+          callback(modules);
+        };
+      }else if(typeof target === "function"){
+        target(function(){
+          callback(modules);
+        });
+      }
+
       return this;
     },
     intro: function(intro){
       var _this = this;
       this._intro.start = function(){
-        _this.isIntroStart = true;
+        _this.isAnimating = true;
         intro.start(modules, function(){
+          _this.isAnimating = false;
           _this._introComp(intro.end);
         });
       };
       return this;
     },
     _introComp: function(end){
+      var _this = this;
       this._bindEvent();
-      end(modules);
+      end(modules, function(){
+        _this.isAnimating = false;
+      });
     },
     _introStart: function(){
       this._intro.start();
@@ -101,7 +114,6 @@ var Teaser = (function(window, document, $, sound, browser){
       this._bindMenuClick();
     },
     _attachInternalApp: function(options){
-      var _this = this;
       if(!options) return;
       if(options.sounds.length !== 0) {
         this._addSounds(options.sounds);
@@ -154,7 +166,7 @@ var Teaser = (function(window, document, $, sound, browser){
       settings.onPlayerPlaying = function(){
         if(!isLoaded){
           isLoaded = true;
-          $target.tubeplayer(INTERNAL_APP.SOUND.VOLUME, options.create.volume);
+          $target.tubeplayer(INTERNAL_APP.VIDEO.VOLUME, options.create.volume);
         }
       };
       $target.tubeplayer(settings);
@@ -169,7 +181,7 @@ var Teaser = (function(window, document, $, sound, browser){
               $target.tubeplayer(INTERNAL_APP.VIDEO.PLAY);
             },
             pause: function(){
-              if(!_this.isIntroStart){
+              if(!_this.isAnimating){
                 _this._introStart();
               }
               $target.tubeplayer(INTERNAL_APP.VIDEO.PAUSE);
@@ -201,13 +213,13 @@ var Teaser = (function(window, document, $, sound, browser){
     },
     _isCanNext: function(event, target){
       return event.originalEvent.wheelDelta < 0 &&
-      $HTML.height() + $(window).scrollTop() >= FIXED_HEIGHT &&
-      target.$scene.children().height() - target.$scene.scrollTop() === TEASER_HEIGHT
+        $HTML.height() + $(window).scrollTop() >= FIXED_HEIGHT &&
+        target.$scene.children().height() - target.$scene.scrollTop() === TEASER_HEIGHT
     },
     _isCanPrev: function(event, target){
       return event.originalEvent.wheelDelta > 0 &&
-      $HTML.height() + $(window).scrollTop() <= $HTML.height() &&
-      $HTML.height() - target.$scene.scrollTop() === $HTML.height()
+        $HTML.height() + $(window).scrollTop() <= $HTML.height() &&
+        $HTML.height() - target.$scene.scrollTop() === $HTML.height()
     },
     _bindMenuClick: function(){
       var _this = this;
@@ -219,9 +231,10 @@ var Teaser = (function(window, document, $, sound, browser){
       });
     },
     move: function(index){
-      if(this.isPaging) return;
+      if(this.isPaging || this.isAnimating) return;
       var _this = this;
       this.isPaging = true;
+      this.isAnimating = true;
       this.prevPageIndex = this.currentPageIndex;
       this.currentPageIndex = index;
       this._controlScene(this.prevPageIndex, SCENE_LIFE_CYCLE.INIT);
@@ -242,7 +255,10 @@ var Teaser = (function(window, document, $, sound, browser){
       this.move(increasedIndex);
     },
     _controlScene: function(index, state){
-      this.sceneList[index][state](modules);
+      var _this = this;
+      this.sceneList[index][state](modules, function(){
+        _this.isAnimating = false;
+      });
     },
     attachScene: function(scenes){
       var _this = this;
@@ -261,7 +277,7 @@ var Teaser = (function(window, document, $, sound, browser){
 })(
   window,
   document,
-  jQuery, // Added state youtube player plugin (tubeplayer)
+  jQuery, // Added plugin (tubeplayer, easing)
   soundManager,
   (function(){
     // used IIFE
@@ -289,3 +305,9 @@ var Teaser = (function(window, document, $, sound, browser){
     return config;
   })()
 );
+
+if ( typeof define === "function" && define.amd ) {
+  define( "Teaser", [], function() {
+    return Teaser;
+  });
+}

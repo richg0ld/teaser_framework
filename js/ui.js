@@ -1,4 +1,32 @@
-$(function(){
+require.config({
+  baseUrl: "js",
+  paths: {
+    "jquery": "lib/jq-1.10.2.min",
+    "Teaser": "lib/Teaser",
+    "soundManager": "lib/soundmanager2",
+    "easing": "lib/jquery.easing.1.3.min",
+    "tubePlayer": "lib/jQuery.tubeplayer.min",
+    "domReady": "lib/domReady"
+  },
+  shim:{
+    "easing":{
+      deps:['jquery']
+    },
+    "tubePlayer":{
+      deps:['jquery']
+    },
+    "Teaser":{
+      deps:["jquery", "soundManager", "tubePlayer", "easing"]
+    }
+  }
+});
+require([
+  "jquery",
+  "Teaser",
+  "domReady"
+], function($, Teaser, domReady) {
+
+  $(function(){
     var teaser = new Teaser({
       navigatorButtons: ".t_controller__navigator>ul>li>button",
       menuListButtons: ".t_controller__menu--list>ul>li>button",
@@ -55,7 +83,7 @@ $(function(){
     ]);
 
     teaser
-      .loaded(function(modules){
+      .loaded(domReady, function(modules){
         modules.loader.$wrapper.fadeOut();
         $(".t-video__btn--close").on("click", function(){
           $(".t-video").hide();
@@ -64,89 +92,90 @@ $(function(){
         });
       })
       .intro({
-          start: function(modules, comp){
-            setTimeout(function(){
-              comp();
-            }, 1000);
-          },
-          end: function(modules){
-            //S: example
-            $(".t_controller__video button").on("click", function(){
-              $(".t-video").show();
-              modules.videos["teaser_video"].play();
-              modules.sounds["teaser_sound"].pause();
-            });
-            $(".t_controller__sound button").on("click", function(){
-              modules.sounds["teaser_sound"].toggle();
-            });
-            //E: example
-          }
+        start: function(modules, comp){
+          setTimeout(function(){
+            comp();
+          }, 1000);
+        },
+        end: function(modules){
+          //S: example
+          $(".t_controller__video button").on("click", function(){
+            $(".t-video").show();
+            modules.videos["teaser_video"].play();
+            modules.sounds["teaser_sound"].pause();
+          });
+          $(".t_controller__sound button").on("click", function(){
+            modules.sounds["teaser_sound"].toggle();
+          });
+          //E: example
+        }
       })
       .attachScene([{
-            className:".s0",
-            init: function(modules){
+        className:".s0",
+        init: function(modules){
 
-            },
-            start: function(modules){
+        },
+        start: function(modules, complete){
+          complete();
+        },
+        end: function(modules, complete){
+          complete();
+        }
+      },{
+        className:".s1",
+        init: function(modules){
 
-            },
-            end: function(modules){
+        },
+        start: function(modules, complete){
+          complete();
+        },
+        end: function(modules, complete){
+          complete();
+        }
+      },{
+        className:".s2",
+        init: function(modules){
 
-            }
-        },{
-            className:".s1",
-            init: function(){
+        },
+        start: function(modules, complete){
+          complete();
+        },
+        end: function(modules, complete){
+          complete();
+        }
+      },{
+        className:".s3",
+        init: function(modules){
 
-            },
-            start: function(){
+        },
+        start: function(modules, complete){
+          complete();
+        },
+        end: function(modules, complete){
+          complete();
+        }
+      },{
+        className:".s4",
+        init: function(modules){
 
-            },
-            end: function(){
+        },
+        start: function(modules, complete){
+          complete();
+        },
+        end: function(modules, complete){
+          complete();
+        }
+      },{
+        className:".s5",
+        init: function(modules){
 
-            }
-        },{
-            className:".s2",
-            init: function(){
-
-            },
-            start: function(){
-
-            },
-            end: function(){
-
-            }
-        },{
-            className:".s3",
-            init: function(){
-
-            },
-            start: function(){
-
-            },
-            end: function(){
-
-            }
-        },{
-            className:".s4",
-            init: function(){
-
-            },
-            start: function(){
-
-            },
-            end: function(){
-
-            }
-        }, {
-            className:".s5",
-            init: function(){
-
-            },
-            start: function(){
-
-            },
-            end: function(){
-
-            }
-        }]);
+        },
+        start: function(modules, complete){
+          complete();
+        },
+        end: function(modules, complete){
+          complete();
+        }
+      }]);
+  });
 });
