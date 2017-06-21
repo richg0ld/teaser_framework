@@ -26,10 +26,8 @@ var Teaser = (function(window, document, $, sound, slider, browser){
       }
     },
     CONTROL_CLASS_NAME = {
-      MENU: {
-        OPEN: "open",
-        ACTIVE: "active"
-      }
+      OPEN: "open",
+      ACTIVE: "active"
     },
     FIXED_HEIGHT = $("#wrap").height(),
     TEASER_HEIGHT = 998,
