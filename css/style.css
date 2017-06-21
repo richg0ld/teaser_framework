@@ -115,6 +115,9 @@ button:focus{outline: none;}
 .t_controller__menu--list.open {
     display:block;
 }
+.t_controller__menu--list ul li.active{
+    border: 2px solid red;
+}
 .t_controller__navigator {
     position:absolute;
     left:36px;
@@ -123,13 +126,16 @@ button:focus{outline: none;}
     z-index:4500;
     width:50px;
 }
+.t_controller__navigator li.active{
+    border: 3px solid red;
+}
 .t_scenes{
     width:100%;
     position:absolute;
     top:0;
     left:0;
 }
-.t_scenes .t_scene > div{
+.t_scenes .t_scene > .test_page_num{
     width:100%;
     height:100%;
     text-align: center;
@@ -208,4 +214,80 @@ button:focus{outline: none;}
 .t_footer{
     position:absolute;
     bottom:0;
+}
+
+/*slider*/
+.slider{
+    position:relative;
+    height:100%;
+    text-align:center;
+    overflow:hidden;
+}
+.slider ul.slider_list{
+    display:inline-block;
+    width:auto;
+    padding:500px 0 0 0;
+    *display:inline;
+    zoom:1
+}
+.slider ul.slider_list li{
+    float:left;
+    margin-left:20px
+}
+.slider ul.slider_list li:first-child{
+    margin-left:0
+}
+.slider ul.slider_list li .dot{
+    position:relative;
+    z-index:20;
+}
+.slider ul.slider_list li .content{
+    display:block;
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+}
+.slider ul.slider_list li .content img{
+    vertical-align:top
+}
+.slider .btn_prev{
+    position:absolute;
+    top:50%;
+    z-index:30;
+    margin-top:-8px;
+    left:0
+}
+.slider .btn_next{
+    position:absolute;
+    top:50%;
+    z-index:30;
+    margin-top:-8px;
+    right:0
+}
+.slider .control{
+    display:inline-block;
+    position:relative;
+    padding:500px 0 0 0;
+    vertical-align:top;
+    z-index:20;
+    *display:inline;
+    zoom:1
+}
+.slider .btn_stop{}
+.slider .btn_play{}
+.slider .page_count{
+    display:inline-block;
+    position:absolute;
+    right:0;
+    vertical-align:top;
+    z-index:20;
+}
+
+
+.test_slider{
+    width: 1099px;
+    height: 615px;
 }

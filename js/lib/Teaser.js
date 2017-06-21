@@ -1,5 +1,5 @@
 //used closure, IIFE,  constructor pattern
-var Teaser = (function(window, document, $, sound, browser){
+var Teaser = (function(window, document, $, sound, slider, browser){
 
   //const values
   var
@@ -27,7 +27,8 @@ var Teaser = (function(window, document, $, sound, browser){
     },
     CONTROL_CLASS_NAME = {
       MENU: {
-        OPEN: "open"
+        OPEN: "open",
+        ACTIVE: "active"
       }
     },
     FIXED_HEIGHT = $("#wrap").height(),
@@ -61,6 +62,10 @@ var Teaser = (function(window, document, $, sound, browser){
 
   //method
   Teaser.prototype = {
+    ready: function(callback){
+      callback && callback(modules);
+      return this;
+    },
     loaded: function(target, callback){
       if(!modules.loader) modules.loader = {};
       this._addMoudle("loader", "$wrapper", this.$loadingWrapper);
@@ -109,7 +114,7 @@ var Teaser = (function(window, document, $, sound, browser){
       modules[type][id] = module;
     },
     _bindEvent: function(){
-      this._bindSceneClick(PAGING_BUTTONS_PROPERTY_NAMES);
+      this._bindSceneClick();
       this._bindSceneScroll();
       this._bindMenuClick();
     },
@@ -131,38 +136,40 @@ var Teaser = (function(window, document, $, sound, browser){
         soundManager.createSound(options.create).load();
       };
       soundManager.setup(settings);
-      callback(id);
+      this._addMoudle("sounds", id, {
+        _isPlaySound: false,
+        isPlaySound: function(){
+          return this._isPlaySound
+        },
+        play: function(){
+          soundManager.play(id);
+          this._isPlaySound = true;
+        },
+        pause: function(){
+          soundManager.pause(id);
+          this._isPlaySound = false;
+        },
+        toggle: function(){
+          soundManager[ this.isPlaySound() ? INTERNAL_APP.SOUND.PAUSE : INTERNAL_APP.SOUND.PLAY ](id);
+          this._isPlaySound = !this._isPlaySound;
+        }
+      });
+      callback && callback(id);
     },
     _addSounds: function(list){
       var _this = this;
       $.each(list, function(i, v){
-        _this._addSound(v, function(id){
-          _this._addMoudle("sounds", id, {
-            _isPlaySound: false,
-            isPlaySound: function(){
-              return this._isPlaySound
-            },
-            play: function(){
-              soundManager.play(id);
-              this._isPlaySound = true;
-            },
-            pause: function(){
-              soundManager.pause(id);
-              this._isPlaySound = false;
-            },
-            toggle: function(){
-              soundManager[ this.isPlaySound() ? INTERNAL_APP.SOUND.PAUSE : INTERNAL_APP.SOUND.PLAY ](id);
-              this._isPlaySound = !this._isPlaySound;
-            }
-          });
-        });
+        _this._addSound(v);
       });
     },
     _addVideo: function(options, callback){
+      if(!options.init && !options.create) return;
       if(!modules.videos) modules.videos = {};
+      var _this = this;
       var isLoaded = false;
+      var id = options.create.id;
       var $target = $(options.target);
-      var settings = options.init || {};
+      var settings = options.init;
       settings.onPlayerPlaying = function(){
         if(!isLoaded){
           isLoaded = true;
@@ -170,31 +177,33 @@ var Teaser = (function(window, document, $, sound, browser){
         }
       };
       $target.tubeplayer(settings);
-      callback(options.create.id, $target);
+      modules.videos[id] = {
+        play: function(){
+          $target.tubeplayer(INTERNAL_APP.VIDEO.PLAY);
+        },
+        pause: function(){
+          if(!_this.isAnimating){
+            _this._introStart();
+          }
+          $target.tubeplayer(INTERNAL_APP.VIDEO.PAUSE);
+        }
+      };
+      callback && callback(id, $target);
     },
     _addVideos: function(list){
       var _this = this;
       $.each(list, function(i, v){
-        _this._addVideo(v, function(id, $target){
-          modules.videos[id] = {
-            play: function(){
-              $target.tubeplayer(INTERNAL_APP.VIDEO.PLAY);
-            },
-            pause: function(){
-              if(!_this.isAnimating){
-                _this._introStart();
-              }
-              $target.tubeplayer(INTERNAL_APP.VIDEO.PAUSE);
-            }
-          }
-        });
+        _this._addVideo(v);
       });
     },
-    _bindSceneClick: function(propsNames){
+    _bindSceneClick: function(){
       var _this = this;
-      $.each(propsNames, function(i, v){
+      var idx = -1;
+      $.each(PAGING_BUTTONS_PROPERTY_NAMES, function(i, v){
+
         _this[v].on(EVENT.CLICK, function(){
-          _this.move($(this).parent().index());
+          idx = $(this).parent().index();
+          _this.move(idx);
         });
       });
     },
@@ -202,7 +211,6 @@ var Teaser = (function(window, document, $, sound, browser){
       var _this = this;
       $HTML.on(EVENT.MOUSE_WHEEL, function(e){
         var target = _this.sceneList[_this.currentPageIndex];
-        console.log(_this._isCanNext(e, target));
         if(_this._isCanNext(e, target)){
           _this.next();
         }
@@ -212,7 +220,6 @@ var Teaser = (function(window, document, $, sound, browser){
       });
     },
     _isCanNext: function(event, target){
-      console.log($HTML.height() + $(window).scrollTop() , FIXED_HEIGHT)
       return event.originalEvent.wheelDelta < 0 &&
         $HTML.height() + $(window).scrollTop() >= FIXED_HEIGHT &&
         target.$scene.children().height() - target.$scene.scrollTop() === TEASER_HEIGHT
@@ -225,10 +232,16 @@ var Teaser = (function(window, document, $, sound, browser){
     _bindMenuClick: function(){
       var _this = this;
       this.$menuOpenButton.on(EVENT.CLICK, function(){
-        _this.$menuList.addClass(CONTROL_CLASS_NAME.MENU.OPEN);
+        _this.$menuList.addClass(CONTROL_CLASS_NAME.OPEN);
       });
       this.$menuCloseButton.on(EVENT.CLICK, function(){
-        _this.$menuList.removeClass(CONTROL_CLASS_NAME.MENU.OPEN);
+        _this.$menuList.removeClass(CONTROL_CLASS_NAME.OPEN);
+      });
+    },
+    _activePageController: function(index){
+      var _this = this;
+      $.each(PAGING_BUTTONS_PROPERTY_NAMES, function(i, v){
+        _this[v].parent().removeClass(CONTROL_CLASS_NAME.ACTIVE).eq(index).addClass(CONTROL_CLASS_NAME.ACTIVE);
       });
     },
     move: function(index){
@@ -238,10 +251,11 @@ var Teaser = (function(window, document, $, sound, browser){
       this.isAnimating = true;
       this.prevPageIndex = this.currentPageIndex;
       this.currentPageIndex = index;
+      this._activePageController(index);
       this._controlScene(this.prevPageIndex, SCENE_LIFE_CYCLE.INIT);
-      this._controlScene(this.currentPageIndex, SCENE_LIFE_CYCLE.START);
+      this._controlScene(index, SCENE_LIFE_CYCLE.START);
       this.$scenesWrapper.stop(true, true).animate({top:-(TEASER_HEIGHT*index)}, this.pagingSpeed, this.easing, function(){
-        _this._controlScene(_this.currentPageIndex, SCENE_LIFE_CYCLE.END);
+        _this._controlScene(index, SCENE_LIFE_CYCLE.END);
         _this.isPaging = false;
       });
     },
@@ -280,6 +294,7 @@ var Teaser = (function(window, document, $, sound, browser){
   document,
   jQuery, // Added plugin (tubeplayer, easing)
   soundManager,
+  Slider,
   (function(){
     // used IIFE
     var config = {
