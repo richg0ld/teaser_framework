@@ -17,7 +17,7 @@ require.config({
       deps:['jquery']
     },
     "Slider":{
-      deps:['jquery']
+      deps:['jquery', "easing"]
     },
     "Teaser":{
       deps:["jquery", "soundManager", "tubePlayer", "easing", "Slider"]

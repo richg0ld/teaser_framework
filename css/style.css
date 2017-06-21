@@ -135,12 +135,8 @@ button:focus{outline: none;}
     top:0;
     left:0;
 }
-.t_scenes .t_scene > .test_page_num{
-    width:100%;
-    height:100%;
-    text-align: center;
-    line-height: 998px;
-    font-size:600px;
+.t_scenes .t_scene > .t_scene--inner{
+    min-height:998px;
 }
 .t_scenes .t_scene:nth-child(1){
     background-color: #db7f96;
@@ -287,6 +283,13 @@ button:focus{outline: none;}
 }
 
 
+.test_page_num{
+    width:100%;
+    height:100%;
+    text-align: center;
+    line-height: 998px;
+    font-size:600px;
+}
 .test_slider{
     width: 1099px;
     height: 615px;
